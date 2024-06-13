@@ -1,0 +1,219 @@
+﻿@{
+    ViewData["Title"] = "Trash";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    Trash
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Trash</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!------------------------- Search box ---------------------------->
+<div class="row" style="width:50%; margin-left:23%; margin-bottom:2%;">
+    <div class="col-sm-1">
+        <p>Search</p>
+    </div>
+    <div class="col-sm-6">
+        <input type="text" class="form-control" id="input-Title" onkeyup="auto();" placeholder="Enter Book Name.." autocomplete="off">
+        <div class="autocompBox" style="width:95%;"></div>
+    </div>
+    <div class="col-sm-5">
+        <button type="submit" id="search-btn" class="btn btn-info"><i class="fas fa-search"></i> Search</button>
+        <button type="submit" id="back-btn" class="btn btn-default"> <i class="fas fa-step-backward"></i> Back</button>
+    </div>
+</div>
+<!------------------------- All Users ---------------------------->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <span id="data-error" style="color:red;" class="card-title">No Book Found</span>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example" class="table table-bordered table-striped">
+                            <thead style="background-color:  #3f6791 ;">
+                                <tr>
+                                    <th>Book ID</th>
+                                    <th>Book Title</th>
+                                    <th>Book Activate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablebody">
+                                <tr>
+                                    <td colspan="6">No History</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div>
+    </div>
+        <!-- /.container-fluid -->
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    /*--------------------------------- Get All Removed Books -----------------------*/
+    $(document).ready(function () {
+        $("#data-error").hide();
+        var res = "";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: url+"Book_Stock/Getremove",
+            type: "GET",
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        res += "<tr>" +
+                            "<td>" + item.bookId + "</td>" +
+                            "<td>" + item.bookTitle + "</td>" +
+                            "<td><button class='activate-btn btn btn-info info-btn' data-bookId='" + item.bookId + "'>Activate</button></td></tr>";
+                    });
+                    if(res!="")$("#tablebody").html(res);
+                } else {
+                    $("#error").show();
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+            }
+        });
+        /*----------------------- Back Btn ---------------------------------------*/
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*--------------------------------- Activate btn -----------------------*/
+        $(document).on("click", ".activate-btn", function () {
+            var id = $(this).attr("data-bookId");
+            sessionStorage.setItem("bookId", id);
+            var u = url+"Book_Stock/ActivateBook/" + id;
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: u,
+                type: "PUT",
+                success: function (response) {
+                    if (response.status == "Success") {
+                        alert("Success" + response.message);
+                        window.location.href = "/BookView/Index";
+                    } else {
+                        alert("Error -" + response.message)
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                }
+            });
+        });
+         /*----------------------- Search Users ---------------------------------------*/
+        $("#search-btn").on("click", function(){
+            var book = $("#input-Title").val().trim();
+            var se = "";
+            if (book == "") {
+                book = "None";
+            }
+            var ur = url+"Book_Data/GetBookAutoRemove/" + book;
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: ur,
+                type: "GET",
+                success: function (response) {
+                    if (response.status = "Success") {
+                        $.each(response.data, function (index, item) {
+                            if (item.bookStatus == "Removed") {
+                                se += "<tr>" +
+                                    "<td>" + item.bookId + "</td>" +
+                                    "<td>" + item.bookTitle + "</td>" +
+                                    "<td><button class='activate-btn btn btn-info info-btn' data-bookId='" + item.bookId + "'>Activate</button></td></tr>";
+                            }
+                        });
+                        if (se != "") { $("#data-error").hide(); $("#tablebody").html(se); }
+                        else { $("#data-error").show(); $("#tablebody").html(res); }
+                    } else {
+                        $("#data-error").show();
+                        console.log(response.message);
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+
+                    console.log('Error:', errorThrown);
+                }
+            });
+        });
+    });
+</script>
+<script>
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#input-Title");
+    console.log($inputTitle);
+    function auto() {
+        let input = $inputTitle.val();
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+        let ur = url + "Book_Data/GetBookAutocomplete/" + input + "fla=0";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status == "Success") {
+                    response.data.forEach(item => {
+                        if (item.bookStatus == "Removed") {
+                            available.push(item.bookTitle);
+                        }
+                    });
+                }
+                console.log(available);
+                display(); // Display results after fetching them
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+            }
+        });
+    }
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+        $autocompBox.html(`<ul>${content}</ul>`);
+        if (!result.length) {
+            $autocompBox.empty();
+        }
+    }
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+    }
+    $inputTitle.on('input', auto);
+</script>

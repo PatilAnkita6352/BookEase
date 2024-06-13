@@ -1,0 +1,364 @@
+﻿@{
+    ViewData["Title"] = "Edit Book";
+}
+<style>
+    small {
+        color: red;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Edit Information</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">Book info</a></li>
+                    <li class="breadcrumb-item active">Edit Book</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+
+    <!-- Default box -->
+    <div class="card card-solid">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-4 col-sm-4">
+                    <h3 class="d-inline-block d-sm-none">Book Cover</h3>
+                    <div class="row">
+                        <img src="~/Upload/images (1).jpg" id="Book_Cover" class="product-image" style="max-height:50%;" alt="Product Image">
+                    </div>
+                </div>
+                <div class="col-8 col-sm-8" style='font-size:20px;'>
+                    <div class="card card-info">
+                        <div class="card-header">
+                            <h3 class="card-title">Edit Book Information</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form class="form-horizontal">
+                            <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="Book_id" class="col-sm-2 col-form-label">Book Id</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="Book_id" autocomplete="off" disabled>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="Book_title" class="col-sm-2 col-form-label">Book Title</label>
+                                    <div class="col-sm-10">
+                                        <small id="Title_error">*This Field can not be empty</small>
+                                        <input type="text" class="form-control" id="Book_title" autocomplete="off"  placeholder="Enter Book Title...">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="Book_Author" class="col-sm-2 col-form-label">Book Author</label>
+                                    <div class="col-sm-10">
+                                        <small id="Author_error">*This Field can not be empty</small>
+                                        <input type="text" class="form-control" id="Book_Author" placeholder="Enter Book Author..." autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="Book_Author" class="col-sm-2 col-form-label">Genere</label>
+                                    <div class="col-sm-10">
+                                        <small id="Genere_error">*This Field can not be empty</small>
+                                        <select class="form-control" id="Book_Genere" onchange="checkother();">
+                                            <option value="">Select Genere</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="other_genre_new">
+                                    <label for="other_genre" class="col-sm-2 col-form-label"></label>
+                                    <div class="col-sm-10">
+                                        <small id="other_genre_error">*Enter other genre</small>
+                                        <input type="text" class="form-control" id="other_genre" onblur="validother();" placeholder="Enter genre..." autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="Book_Rating" class="col-sm-2 col-form-label">Book Rating</label>
+                                    <div class="col-sm-10">
+                                        <small id="Rate_error">*This Field can not be empty</small>
+                                        <small id="Rating_error">*Enter valid rating </small>
+                                        <input type="text" class="form-control" id="Book_Rate" onkeyup="checkrate();" placeholder="Enter Rating..." autocomplete="off">
+                                    </div>
+                                </div>
+                                    <!-- textarea -->
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Description</label>
+                                    <div class="col-sm-10">
+                                        <small id="Summary_error">*This Field can not be empty</small>
+                                        <textarea type="textarea" rows="10" class="form-control" id="Book_summary"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Cover Page</label>
+                                    <div class="col-sm-10" style="font-size:17px;">
+                                        <small id="file_error">*Select File to upload</small>
+                                        <div class="input-group ">
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input" id="upload_Book" autocomplete="off">
+                                                <label class="custom-file-label" for="upload_Book">Choose file</label>
+                                            </div>
+                                            <div class="input-group-append">
+                                                <button class="input-group-text" id="upload-img">Upload</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <!-- /.card-body -->
+                            <div class="card-footer">
+                                <button id="edit-btn" class="btn btn-info">Edit</button>
+                                <button id="back-btn" class="btn btn-default float-right">Back</button>
+                            </div>
+                            <!-- /.card-footer -->
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+
+</section>
+<script>
+    $(function () {
+        bsCustomFileInput.init();
+    });
+</script>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        $("#Title_error").hide();
+        $("#Author_error").hide();
+        $("#Genere_error").hide();
+        $("#Rate_error").hide();
+        $("#Rating_error").hide();
+        $("#file_error").hide();
+        $("#Summary_error").hide();
+        var id = sessionStorage.getItem('bookid');
+        var title = sessionStorage.getItem('title');
+        var Author = sessionStorage.getItem('Author');
+        var rate = sessionStorage.getItem('rate');
+        var category = sessionStorage.getItem('category');
+        var summary = sessionStorage.getItem('summary');
+        var img = sessionStorage.getItem('img');
+        $("#Book_id").val(id);
+        $("#Book_title").val(title);
+        $("#Book_Author").val(Author);
+        $("#Book_Rate").val(rate);
+        $("#Book_summary").val(summary);
+        $("#Book_Cover").attr('src', img);
+        $("#other_genre_new").hide();
+        $("#other_genre_error").hide();
+        console.log(category);
+
+    /*----------------------- Book Genere ---------------------------------------*/
+        var genere = '<option value="' + category + '">' + category + '</option>';
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: url+"Book_Data/GetGenere",
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        genere += '<option value="' + item + '">' + item + '</option>';
+                    });
+                    genere += '<option value ="other">other</option>';
+                    $("#Book_Genere").html(genere);
+                }
+            }
+        });
+
+    /*----------------------- Upload Image Btn ---------------------------------------*/
+        $('#upload-img').click(function (e) {
+            e.preventDefault();
+            
+           
+            var formData = new FormData();
+            var files = $('#upload_Book')[0].files; // Access files property from the native DOM element
+
+            // Check if files are selected
+            if (files.length > 0) {
+                formData.append('upload_Book', files[0]); // Append the first file to the FormData object
+                alert('File added to FormData: ' + formData.get('upload_Book').name); // Display the name of the added file
+            
+                $.ajax({
+                    url: '/BookView/Upload',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.status == "Success") {
+                            img = response.url;
+                            $("#Book_Cover").attr('src', img);
+                        } else {
+                            alert('Image uploaded error -' + response.message);
+                        }
+
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error uploading image: ' + error);
+                    }
+                });
+            } else {
+                $("#file_error").show();
+            }
+        });
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*---------------------- Not allowed extra rating ---------------------------------------*/
+
+        $("#Book_Rate").on("keypress", function (e) {
+            if ((e.which < 48 || e.which > 57)) {
+                if (e.which != 46) {
+                    return false;
+                }
+            }
+            var v = $("#Book_Rate").val();
+            var r = parseFloat(v);
+            console.log(r);
+            if (v >= 4.9) {
+                return false;
+            }
+        });
+    /*----------------------- Edit Btn ---------------------------------------*/
+        $("#edit-btn").on("click", function (e) {
+            e.preventDefault();
+
+            var id = $("#Book_id").val();
+            var title = $("#Book_title").val();
+            var rating = $("#Book_Rate").val();
+            var author = $("#Book_Author").val();
+            var category = $("#Book_Genere").val();
+            var summary = $("#Book_summary").val();
+            if (img == "") {
+                img = "/Upload/Default_image.jpg"
+            }
+            if (category == "other") {
+                category = $("#other_genre").val();
+            }
+            var ur = url+"Book_Data/EditBook";
+            var book = {
+                bookId: id,
+                bookTitle: title,
+                bookAuthor: author,
+                bookGenre: category,
+                bookRating: rating,
+                bookImg: img,
+                bookDesc: summary,
+                bookStatus: "Available"
+            };
+
+            if (valid()) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    url: ur,
+                    type: "PUT",
+                    data: JSON.stringify(book),
+                    success: function (response) {
+                        if (response.status == "Success") {
+                            alert("Success -" + response.message);
+                            window.location.href = "/BookView/Index";
+                        } else {
+                            alert("Error -" + response.message);
+                        }
+
+                    },
+                    error: function (xhr, status, error) {
+
+                        console.error("Error adding book:", error);
+                        alert("Error editing book: " + error);
+                    }
+
+                });
+            }
+
+        });
+    });
+
+    /*----------------------- Check Validity function ---------------------------------------*/
+    function valid() {
+        var flag = true;
+        var title = $("#Book_title").val();
+        var rating = $("#Book_Rate").val();
+        var author = $("#Book_Author").val();
+        var category = $("#Book_Genere").val();
+        var summary = $("#Book_summary").val();
+
+        $("#Title_error").hide();
+        $("#Author_error").hide();
+        $("#Genere_error").hide();
+        $("#Rate_error").hide();
+        $("#Rating_error").hide();
+        $("#Summary_error").hide();
+        
+
+        console.log(title + "-" + rating + "_" + author + "_" + category + "_" + summary);
+        if (title == "") { $("#Title_error").show(); flag = false; }
+        else { $("#Title_error").hide(); }
+        if (rating == "" && flag) { $("#Rate_error").show(); flag = false; }
+        else { $("#Rate_error").hide();}
+        if (author == "" && flag) { $("#Author_error").show(); flag = false; }
+        else { $("#Author_error").hide(); }
+        if (category == "" && flag) { $("#Genere_error").show(); flag = false; }
+        else { $("#Genere_error").hide(); }
+        if (summary == "" && flag) { $("#Summary_error").show(); flag = false; }
+        else { $("#Summary_error").hide();}
+        if (!checkrate()){ flag = false;}
+        return flag;
+    }
+    /*----------------------- Check Rating function ---------------------------------------*/
+    function checkrate() {
+        var flag = true;
+        var valuerate = $("#Book_Rate").val();
+        var r = parseInt(valuerate);
+        if (valuerate == "") { $("#Rate_error").show(); flag = false; }
+        else if (isNaN(valuerate)) { $("#Rating_error").show(); flag = false; }
+        else if (r < 1 || r > 5) { $("#Rating_error").show(); flag = false; }
+        else if (valuerate.length > 3) { $("#Rating_error").show(); flag = false; }
+        else {
+            $("#Rating_error").hide();
+            $("#Rate_error").hide();
+        }
+        return flag;
+    }
+    function checkother() {
+        var other = $("#Book_Genere").val();
+        if (other == "other") {
+            $("#other_genre_new").show();
+            $("#other_genre_error").hide();
+        } else {
+            $("#other_genre_new").hide();
+            $("#other_genre_error").hide();
+        }
+    }
+
+    function validother() {
+        var other = $("#other_genre").val();
+        var other1 = $("#Book_Genere").val();
+        if (other == "" && other1 == "other") {
+            $("#other_genre_error").show();
+            return false;
+        }
+        return true;
+    }
+</script>

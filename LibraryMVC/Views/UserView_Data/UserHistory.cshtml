@@ -1,0 +1,428 @@
+﻿@{
+    ViewData["Title"] = "User Profile";
+}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Profile</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">User Profile</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+
+                <!-- Profile Image -->
+                <div class="card card-primary card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center">
+                            <div style=" margin:auto; border:2px double aliceblue; padding:3%; border-radius:100%; max-width:max-content;">
+                                <i class="fas fa-user-tie" style="font-size:50px;"></i>
+                            </div>
+                            
+                        </div>
+
+                        <h3 class="profile-username text-center" id="User_Name">User</h3>
+
+                        <br />
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b>Total Books</b> <p class="float-right" id="total">0</p>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Issued Books</b> <p class="float-right" id="issued">0</p>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Late Returned</b> <p class="float-right" id="late">0</p>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Returned Books</b> <p class="float-right" id="retu">0</p>
+                            </li>
+                        </ul>
+
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+                <!-- About Me Box -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">About Me</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        
+                        <strong><i class="fas fa-map-marker-alt mr-1"></i> Location</strong>
+
+                        <p class="text-muted" id="userloc">Location</p>
+
+                        <hr>
+
+                        <strong><i class="fas fa-envelope mr-1"></i> Email</strong>
+
+                        <p class="text-muted" id="useremail">Email</p>
+
+                        <hr>
+
+                        <input type="submit" id="back-btn" class="btn btn-primary" value="Back">
+                       
+                    </div>
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <div class="col-md-9">
+                <div>
+                    <h5>History</h5>
+                </div>
+                <!------------------------- All User History ---------------------------->
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header row">
+                                        <div class="col-md-3">
+                                            <span id="data-error" style="color:red;" class="card-title">No Book Found</span>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="row float-right">
+                                                <div class="col-md-9">
+                                                    <input class="form-control" type="text" id="Bookname" onkeyup="auto1();" placeholder="Search with book name.." autocomplete="off"/>
+                                                    <div class="autocompBox1" style="width:225px;"></div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <button class="btn btn-info" id="search-btn">Search</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-header -->
+                                    <div class="card-body">
+                                        <table id="example" class="table table-bordered table-striped">
+                                            <thead style="background-color:  #3f6791 ;">
+                                                <tr>
+                                                    <th>Book ID</th>
+                                                    <th>Book Name</th>
+                                                    <th>Issue Date</th>
+                                                    <th>Return Date</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tablebody">
+                                                <tr>
+                                                    <td colspan="6">No History</td>
+
+                                                </tr>
+                                            </tbody>
+
+                                        </table>
+
+                                        <!-- /.card-body -->
+                                    </div>
+                                    <!-- /.card -->
+                                </div>
+                                <!-- /.col -->
+                            </div>
+                            <!-- /.row -->
+                        </div>
+                        <!-- /.container-fluid -->
+                </section>
+
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!------------------------Auto complete Book---------------------->
+<script>
+    var url = "https://oibc12:8080/api/";
+    let available1 = [];
+    const $autocompBox1 = $(".autocompBox1");
+    const $inputTitle1 = $("#Bookname");
+    function auto1() {
+
+            var input1 = $("#Bookname").val();
+
+        var ur1 = url+"Issued_Books/GetAutoComplete";
+
+        if (input1 === "") {
+            $autocompBox1.empty();
+            return;
+        }
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur1,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available1 = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        var user1 = item.booktitle;
+                        available1.push(user1);
+                    });
+                }
+                display1(); // Display results after fetching them
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+    }
+    function display1() {
+        let input1 = $inputTitle1.val();
+        let result1 = available1.filter(keyword1 =>
+            keyword1.toLowerCase().includes(input1.toLowerCase())
+        );
+
+        let content1 = result1.map(list1 =>
+            `<li onclick='selectInput1(this);'>${list1}</li>`
+        ).join('');
+
+        $autocompBox1.html(`<ul>${content1}</ul>`);
+
+        if (!result1.length) {
+            $autocompBox1.empty();
+        }
+    }
+
+    function selectInput1(list1) {
+        $inputTitle1.val($(list1).text());
+        $autocompBox1.empty();
+    }
+
+    $inputTitle1.on('input', auto1);
+</script>
+<script>
+    $(document).ready(function () {
+        var id = sessionStorage.getItem("userId");
+        var name = sessionStorage.getItem("username");
+        $("#data-error").hide();
+        $("#User_Name").html(name);
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+
+         /*----------------------- Search Btn ---------------------------------------*/
+        var l = url+"User_Data/GetUserdata/" + id;
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: l,
+            type: "POST",
+            success: function(response){
+                    if(response.status == "Success"){
+                        $.each(response.data, function(index, item){
+                            $("#userloc").html(item.userLoc);
+                            console.log(item.userLoc);
+                            $("#useremail").html(item.userEmail);
+                        });
+                    }
+            }
+        });
+
+
+        /*----------------------- All history ---------------------------------------*/
+        var iss = 0;
+        var retu = 0;
+        var late = 0;
+        var res = "";
+        var ur = url+"User_Data/GetByID/" + id;
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        var issueDate = item.issueDate;
+                        var returnDate = item.returnDate;
+
+                        var issue = issueDate.split('-');
+                        var ret = returnDate.split('-');
+
+                        // Convert parts into integers
+                        var iday = parseInt(issue[2]);
+                        var imonth = parseInt(issue[1]);
+                        var iyear = parseInt(issue[0]);
+                        var rday = parseInt(ret[2]);
+                        var rmonth = parseInt(ret[1]);
+                        var ryear = parseInt(ret[0]);
+
+                        // Create a Date object
+                        var idate = new Date(iyear, imonth - 1, iday);
+                        var rdate = new Date(ryear, rmonth - 1, rday);
+
+                        // Define an array of month names
+                        var monthNames = ["Jan", "Feb", "March", "April", "May", "June",
+                            "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+                        ];
+
+                        // Get the month name
+                        var imonthName = monthNames[idate.getMonth()];
+                        var rmonthName = monthNames[rdate.getMonth()];
+
+                        // Function to get the day suffix
+                        function getDaySuffix(day) {
+                            if (day >= 11 && day <= 13) {
+                                return "th";
+                            }
+                            switch (day % 10) {
+                                case 1: return "st";
+                                case 2: return "nd";
+                                case 3: return "rd";
+                                default: return "th";
+                            }
+                        }
+
+                        // Get the day suffix
+                        var idaySuffix = getDaySuffix(iday);
+                        var rdaySuffix = getDaySuffix(rday);
+
+                        // Construct the desired date format
+                        var iformattedDate = iday + idaySuffix + " " + imonthName + " " + iyear;
+                        var rformattedDate = rday + rdaySuffix + " " + rmonthName + " " + ryear;
+
+                        res += "<tr>" +
+                            "<td>" + item.bookId + "</td>" +
+                            "<td>" + item.bookTitle + "</td>" +
+                            "<td>" + iformattedDate + "</td>" +
+                            "<td>" + rformattedDate + "</td>" +
+                            "<td>" + item.bookIStatus + "</td></tr>";
+                        if (item.bookIStatus == "Issued") { iss++; console.log(iss+"-")}
+                        else if (item.bookIStatus == "Returned") { retu++; }
+                        else if (item.bookIStatus == "Late") { late++; }
+                    });
+                    if (res != "") { $("#tablebody").html(res); $("#data-error").hide(); }
+                    console.log("I-" + iss + " R-" + retu + " L-" + late);
+                    $("#total").html(iss + retu + late);
+                    $("#issued").html(iss);
+                    $("#late").html(late);
+                    $("#retu").html(retu);
+
+                } else {
+                    $("#data-error").show();
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+        /*----------------------- Search Btn ---------------------------------------*/
+
+        $("#search-btn").on("click", function () {
+            var book = $("#Bookname").val().trim();
+            var r = "";
+            if (book == "") {
+                book = "Nn";
+            }
+            var u = url+"User_Data/GetByID/" + id;
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url:u,
+                type: "GET",
+                data: { status: "" },
+                success: function (response) {
+                    if (response.status == "Success") {
+                        $.each(response.data, function (index, item) {
+                            if (item.bookTitle==book){
+                                var issueDate = item.issueDate;
+                                var returnDate = item.returnDate;
+
+                                var issue = issueDate.split('-');
+                                var ret = returnDate.split('-');
+
+                                // Convert parts into integers
+                                var iday = parseInt(issue[2]);
+                                var imonth = parseInt(issue[1]);
+                                var iyear = parseInt(issue[0]);
+                                var rday = parseInt(ret[2]);
+                                var rmonth = parseInt(ret[1]);
+                                var ryear = parseInt(ret[0]);
+
+                                // Create a Date object
+                                var idate = new Date(iyear, imonth - 1, iday);
+                                var rdate = new Date(ryear, rmonth - 1, rday);
+
+                                // Define an array of month names
+                                var monthNames = ["Jan", "Feb", "March", "April", "May", "June",
+                                    "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+                                ];
+
+                                // Get the month name
+                                var imonthName = monthNames[idate.getMonth()];
+                                var rmonthName = monthNames[rdate.getMonth()];
+
+                                // Function to get the day suffix
+                                function getDaySuffix(day) {
+                                    if (day >= 11 && day <= 13) {
+                                        return "th";
+                                    }
+                                    switch (day % 10) {
+                                        case 1: return "st";
+                                        case 2: return "nd";
+                                        case 3: return "rd";
+                                        default: return "th";
+                                    }
+                                }
+
+                                // Get the day suffix
+                                var idaySuffix = getDaySuffix(iday);
+                                var rdaySuffix = getDaySuffix(rday);
+
+                                // Construct the desired date format
+                                var iformattedDate = iday + idaySuffix + " " + imonthName + " " + iyear;
+                                var rformattedDate = rday + rdaySuffix + " " + rmonthName + " " + ryear;
+
+                                r += "<tr>" +
+                                    "<td>" + item.bookId + "</td>" +
+                                    "<td>" + item.bookTitle + "</td>" +
+                                    "<td>" + iformattedDate + "</td>" +
+                                    "<td>" + rformattedDate + "</td>" +
+                                    "<td>" + item.bookIStatus + "</td></tr>";
+                            } 
+                        });
+                        if (r != "") {
+                            $("#tablebody").html(r);
+                            $("#data-error").hide();
+                        } else {
+                            $("#data-error").show();
+                            $("#tablebody").html(res);
+                        }
+                    } else {
+                        $("#data-error").show();
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                }
+            });
+
+        });
+    });
+</script>

@@ -1,0 +1,181 @@
+﻿@{
+    ViewData["Title"] = "Book Info";
+}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poetsen+One&family=Tenor+Sans&display=swap" rel="stylesheet">
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Book-info</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Book-Info</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+
+<!-- Main content -->
+<section class="content">
+
+    <!-- Default box -->
+    <div class="card card-solid">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-4 col-sm-4">
+                    <h3 class="d-inline-block d-sm-none">Book Cover</h3>
+                    <div class="col-12">
+                        <img src="~/Upload/Default_image.jpg" id="BookCover" class="product-image" style="max-height:50%;" alt="Product Image">
+                    </div>
+                </div>
+                <div class="col-8 col-sm-8" style='font-family:"Tenor Sans", sans-serif;'>
+                    <div class="float-right">
+                        <div class="btn-group">
+                            <button class="btn  btn-outline-info editbtn">
+                                <i class="far fa-edit"></i>
+                                Edit
+                            </button>
+                            <button class="btn  btn-outline-info historybtn">
+                                <i class="fas fa-history"></i>
+                                History
+                            </button>
+                        </div>
+                    </div>
+                    <div id="infor">
+                        <h1 class="my-3" style='font-size:50px;'>Book Name</h1>
+                        <h4>Author Name: The Book You are looking for is not available</h4>
+                        <h4>Book Genere: ABC</h4>
+                        <h4>Rating: ABC  <i class="fas fa-star" style="color: #FFD43B;"></i></h4>
+                        <div class="bg-gray py-2 px-3 mt-4">
+                            <h4 class="mb-0">
+                                Not Available in Stock
+                            </h4>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div id="issue" class="btn btn-primary btn-lg btn-flat">
+                            <i class="fas fa-cart-plus fa-lg mr-2"></i>
+                            Issue Book
+                        </div>
+                        <div id="back-btn"  class="btn btn-default btn-lg btn-flat">
+                            <i class="fas fa-step-backward"></i>
+                            Back
+                        </div>
+                    </div>
+                    <hr>
+                    <br />
+                    <h4 >Description</h4>
+                    <h5 id="summary">The Book you are looking for is deactivated for some reason</h5>
+                    <div class="mt-4 product-share">
+                        <a href="#" class="text-gray">
+                            <i class="fab fa-facebook-square fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-gray">
+                            <i class="fab fa-twitter-square fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-gray">
+                            <i class="fas fa-envelope-square fa-2x"></i>
+                        </a>
+                        <a href="#" class="text-gray">
+                            <i class="fas fa-rss-square fa-2x"></i>
+                        </a>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <!-- /.card-body -->
+    </div>
+    <!-- /.card -->
+
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        var id = sessionStorage.getItem("bookId");
+        var title = "";
+        var Author = "";
+        var rate = "";
+        var category = "";
+        var summary = "";
+        var img = "";
+        $("#error").hide();
+        var res = "";
+        var ur = url + "Book_Data/GetById/" + id;
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    res = "";
+                    var len = response.data.length;
+                    $.each(response.data, function (index, item) {
+                        res += '<h1 class="my-3" style = "font-size:50px;"> ' + item.bookTitle + '</h1>' + 
+                               '<h4> Author Name: '+ item.bookAuthor +' </h4>'+
+                               '<h4> Book Genere: ' + item.bookGenre + ' </h4>' +
+                               '<h4> Rating: ' + item.bookRating + ' <i class="fas fa-star" style = "color: #FFD43B;"></i></h4> '+
+                               '<div class="bg-gray py-2 px-3 mt-4">'+
+                               '<h4 class="mb-0">'+item.bookStatus+' in stock'+
+                               '</h4></div>';
+                        
+                        $("#summary").html(item.bookDesc);
+                        $("#BookCover").attr('src', item.bookImg);
+                        if (item.bookImg == "") $("#BookCover").attr('src', '/Upload/Default_image.jpg');
+
+                        var st = item.bookStatus;
+                        title = item.bookTitle;
+                        Author = item.bookAuthor;
+                        rate = item.bookRating;
+                        category = item.bookGenre;
+                        summary = item.bookDesc;
+                        img = item.bookImg;
+                    });
+                    $("#infor").html(res);
+                } else {
+                    alert("Error -" + response.message);
+                }
+
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+
+        $(document).on("click", ".historybtn", function () {
+            sessionStorage.setItem('bookid', id);
+            window.location.href = "/IssueBookView/History";
+        });
+        $(document).on("click", ".editbtn", function () {
+            sessionStorage.setItem('bookid', id);
+            sessionStorage.setItem('title', title);
+            sessionStorage.setItem('Author', Author);
+            sessionStorage.setItem('rate', rate);
+            sessionStorage.setItem('category', category);
+            sessionStorage.setItem('summary', summary);
+            sessionStorage.setItem('img', img);
+            window.location.href = "/BookView/EditBook";
+        });
+        $("#issue").on("click", function () {
+            sessionStorage.setItem('bookTitle', title);
+            sessionStorage.setItem('bookid', id);
+            sessionStorage.setItem('img', img);
+            window.location.href = "/IssueBookView/IssueBook";
+        });
+        $("#back-btn").on("click", function () {
+            window.location.href = "/BookView/Index";
+        });
+    });
+</script>

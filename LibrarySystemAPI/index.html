@@ -1,0 +1,189 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="filter">
+    <div class="search-box">
+        <p class="row">Search: </p>
+        <div class="row">
+            <input type="text" id="input-Title" placeholder="Book Title" onkeyup="auto();" autocomplete="off" />
+            <button><i class="bx bx-search-alt-2"></i></button>
+        </div>
+        <div class="autocompBox">
+        </div>
+    </div>
+</div>
+<div class="allbook" id="deck">
+    
+</div>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+<script>
+    $(document).ready(function () {
+        
+        $("#error").hide();
+        var res = "";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: "https://localhost:7172/api/Book_Data/GetAllBooks",
+            type: "GET",
+            data: {status:""},
+            success: function (response) {
+                if (response.status == "Success") {
+                    res = "<div class='book'>"+
+                        "< div class='row' > ";
+                    var cnt = 0;
+                    var len = response.data.length;
+                    $.each(response.data, function (index, item) {
+                        if(cnt%4==0){
+                            "<div class='book' >" +
+                                "<div class='row' > ";
+                        }
+                        res += "<div class='col-sm-12 col-md-6 col-lg- 3'>"+
+                            "< div class='book-card' >"+
+                                "<div class='row g-0' >"+
+                                    "<div class='col-md-5' >"+
+                                        "< img src = '~"+item.bookimg+"' class='book-img' /> "+
+                                            "</div>"+
+                                           "< div class='col-md-7'>"+
+                                                "<div class='book-body' >"+
+                                                   "< p class='book-id' > " + item.bookId + " < /p>"+
+                                                        "< p class='book-title' > " + item.bookTitle + " < /p>"+
+                                                            "< p class='book-info' > " + item.bookStatus + " < /p>"+
+                                                                "< button class='book-btn infobtn' data - bookId='" + item.bookId + "' > <i class='bx bx-info-circle' > </i> More info</button > "+
+                                                 "</div>"+
+                                             "< /div>"+
+                                   " < /div>"+
+                             "< /div>"+
+                         "< /div>";
+                        cnt += 1;
+                        if (cnt % 4 == 0) {
+                            res += "</div>" +
+                                "</div>";
+                        }
+                    });
+                    if(cnt%4 != 0){
+                        res += "</div>" +
+                            "</div>";
+                    }
+                    
+                    console.log(res);
+                    $("#deck").html(res);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+                window.location.href = "/BookView/Index";
+            }
+        });
+
+        $(document).on("click", ".infobtn", function(){
+            var id = $(this).attr("data-bookId");
+
+            sessionStorage.setItem("bookId", id);
+
+            window.location.href = "/BookView/BookInfo";
+        });
+
+        $("#search").on("click", function () {
+            var title= $("#title").val();
+            var category = $("#category").val();
+            
+
+            if (title == "") {
+                title = "_";
+            }
+            if(category == ""){
+                category = "_";
+            }
+            var ur = "https://localhost:7172/api/Book_Data/GetBookBySearch/" + title + "/" + category;
+
+
+            if (title != "_" || category != "_") {
+                
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    url: ur,
+                    type: "GET",
+                    data: { status: "" },
+                    success: function (response) {
+                        if (response.status == "Success") {
+                            var ress = "";
+                            var len = response.data.length;
+                            $.each(response.data, function (index, item) {
+                                if (item.bookStatus != "Removed"){
+                                    ress += "<tr>" +
+                                        "<td>" + item.bookId + "</td>" +
+                                        "<td>" + item.bookTitle + "</td>" +
+                                        "<td>" + item.bookStatus + "</td>" +
+                                        "<td><input type='submit' value='more info' class='infobtn' data-bookId='" + item.bookId + "' /></td></tr>";
+                                }
+                            });
+                            if (ress != "") {$("#error").hide(); $("#deck").html(ress); }
+                            else { $("#error").show(); }
+                        } 
+                        
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+
+                        console.log('Error:', errorThrown);
+                    }
+
+                });
+            } else {
+                $("#error").show();
+              
+            }
+            
+        });
+    });
+    function searchti(){
+        
+        var title = $("#title").val();
+        var category = $("#category").val();
+        if (category == "") category = "1";
+
+        var ur = "https://localhost:7172/api/Book_Data/GetBookBySearch/" + title + "/" + category;
+
+        var array = [];
+       
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    res = "";
+                    var len = response.data.length;
+                     
+                    $.each(response.data, function (index, item) {
+                        if (item.bookStatus != "Removed") { 
+                            array.push(item.bookTitle);
+                        }
+                        
+                    });
+                    
+                } else {
+                    array.push(" ");
+                }
+                $("#title").autocomplete({
+                    source: array
+                });
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+       
+    }
+   
+</script>

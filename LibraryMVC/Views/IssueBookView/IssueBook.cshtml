@@ -1,0 +1,277 @@
+﻿@{
+    ViewData["Title"] = "Issue Book";
+}
+<style>
+    small{
+        color:red;
+        font-size:15px;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Issue Book</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">BookInfo</a></li>
+                    <li class="breadcrumb-item active">Issue Book</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content" style="font-size:17px;">
+    <!-- Default box -->
+    <div class="card">
+        <div class="card-body row">
+            <div class="col-12 col-md-5 text-center d-flex align-items-center justify-content-center">
+                <div class="">
+                    <img src="~/Upload/Default_image.jpg" id="Book_cover" style="max-width:400px; max-height:500px;" />
+                </div>
+                
+            </div>
+            <div class="col-12 col-md-7">
+                <div class="form-group">
+                    <label for="inputName">Book Title</label>
+                    <input type="text" id="Book_Title" class="form-control" autocomplete="off"  disabled />
+                </div>
+                <div class="form-group">
+                    <label for="Book_Stock">Book ID</label>
+                    <small id="stockerror">*This Field can not be empty</small>
+                    <select class="form-control" id="Book_Stock">
+                        <option value="">Select Book</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputSubject">User Name</label>
+                    <small id="Usererror">* User Id is required</small>
+                    <input type="text" id="UserName" class="form-control" onkeyup="auto();" autocomplete="off" />
+                    <div class="autocompBox"></div>
+                </div>
+                <div class="row" id="returnerror">
+                    <small>*Return Date can not be in Past or after max 2 months of issue</small>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <label class="col-md-6" for="Issuedate"> Issue Date : </label>
+                            <input class="col-md-6 form-control" id="Issuedate" type=Date autocomplete="off" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <label class="col-md-6" for="Returndate"> Return Date : </label>
+                            <input class="col-md-6 form-control" id="Returndate" type="Date" autocomplete="off" value="@ViewBag.NextMonth">
+                        </div>
+                    </div>
+
+                </div>
+                <br />
+                <br />
+                <div class="form-group">
+                    <input type="submit" id="issue-btn" class="btn btn-primary" value="Issue Book">
+                    <input type="submit" id="back-btn" class="btn btn-primary" value="Back">
+                </div>
+                @* <form autocomplete="off">
+                        
+
+                    <input type="submit" id="issue" value="Issue">
+                    <h6 id="back-btn"><a href="#">Back</a></h6>
+                </form> *@
+            </div>
+        </div>
+    </div>
+
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        $("#stockerror").hide();
+        $("#Usererror").hide();
+        $("#issueerror").hide();
+        $("#returnerror").hide();
+        var issueDate;
+
+        var id = sessionStorage.getItem("bookid");
+
+
+        var name = sessionStorage.getItem("bookTitle");
+        var img = sessionStorage.getItem("img");
+        $("#Book_cover").attr("src", img);
+        $("#Book_Title").val(name);
+
+        /*----------------------- Issue Date---------------------------------------*/
+       
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: url+"Book_Stock/GetServerTime?timeZone=Asia%2FKolkata",
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    var dateissue = new Date(response.data);
+                    var day = dateissue.getDate();
+                    var month = dateissue.getMonth() + 1; // Month is zero-based
+                    var year = dateissue.getFullYear();
+                    var formattedDate = (year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day);
+                    $("#Issuedate").val(formattedDate);
+                    
+                } else {
+                    alert("Error- while fetching issue date");
+                }
+            }
+        });
+
+
+        /*---------------------------Book Stock ID generate -------------------------------*/
+        var urStock = url+"Book_Stock/GetStock/" + id;
+        var stock = '<option value="">Select category</option>';
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: urStock,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        stock += " <option value='" + item.bookStockId + "'>" + item.bookStockId + "</option>";
+                    })
+                    $("#Book_Stock").html(stock);
+                } else {
+                    $("#Book_Stock").html("<option value='select'>No Book Available</option>");
+                }
+            }
+        });
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        
+
+        /*----------------------- Return Date ---------------------------------------*/
+        $("#Returndate").focusout(function () {
+            var issueD = new Date($("#Issuedate").val());
+            var returnD = new Date($("#Returndate").val());
+            var expectedReturn = new Date(issueD.getFullYear(), issueD.getMonth() + 1, issueD.getDate());
+            var expectedReturn2 = new Date(issueD.getFullYear(), issueD.getMonth() + 2, issueD.getDate());
+            if (returnD < issueD || returnD > expectedReturn2) {
+                $("#returnerror").show();
+            } else {
+                $("#returnerror").hide();
+            }
+        });
+
+        /*-----------------------Issue button ---------------------------------------*/
+        $("#issue-btn").on("click", function (e) {
+            e.preventDefault();
+            var st = $("#Book_Stock").val().trim();
+            var uid = $("#UserName").val().split("-");
+            var userid = uid[0].trim();
+            var issueDate = $("#Issuedate").val().toString().trim();
+            var returnd = $("#Returndate").val().toString().trim();
+
+            if (st == '' || userid == '') {
+                if (st == '') {
+                    $("#stockerror").show();
+                } else {
+                    $("#Usererror").show();
+                }
+            } else {
+                var issue = {
+                    BookStockId: st,
+                    UserId: userid,
+                    IssueDate: issueDate,
+                    ReturnDate: returnd
+                };
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    url: url+"Issued_Books/PostIssueBook",
+                    type: "POST",
+                    data: JSON.stringify(issue),
+                    success: function (response) {
+                        if (response.status == "Success") {
+                            alert(response.message);
+                            window.location.href = "/BookView/Index";
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Error issue book: " + error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<script>
+    /*---------------------------User ID generate -------------------------------*/
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#UserName");
+
+    function auto() {
+
+        var input = $("#UserName").val();
+        var urAuto = url+"User_Data/Get";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: urAuto,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    available = [];
+                    response.data.forEach(item => {
+                        var user = item.userId + "- " + item.userName;
+                        available.push(user);
+                    });
+                }
+                display();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+        });
+
+        
+    }
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+    }
+
+    $inputTitle.on('input', auto);
+</script>
+
+   

@@ -1,0 +1,219 @@
+﻿@{
+    ViewData["Title"] = "Deactivate Book";
+}
+<style>
+    small {
+        color: red;
+        font-size: 13px;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Deactivate Book</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Deactivate Book</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid" style="margin:auto; width:1000px;">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- /.card -->
+                <!-- Horizontal Form -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Deactivate Book</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="BookTitle" class="col-sm-2 col-form-label">Book Title</label>
+                                <div class="col-sm-10">
+                                    <h5 id="BookTitle" disabled>Book Title</h5>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="BookID" class="col-sm-2 col-form-label">Book ID</label>
+                                <div class="col-sm-10">
+                                    <small id="iderror">*Book ISN no. is required</small>
+                                    <input type="text" class="form-control" id="BookID" onkeypress="auto();" autocomplete="off">
+                                    <div class="autocompBox"></div>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" id="deactivate-btn" class="btn btn-info">Deactivate</button>
+                            <button type="submit" id="back-btn" class="btn btn-default float-right">Back</button>
+                        </div>
+                        <!-- /.card-footer -->
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        $("#iderror").hide();
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*----------------------- Deactivate Btn ---------------------------------------*/
+
+        $("#deactivate-btn").on("click", function (e) {
+            e.preventDefault();
+
+            var id = $("#BookID").val();
+            var ur = url+"Book_Data/DeactivateBook/" + id;
+
+            if (checkvalid()) {
+
+                $.ajax({
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    url: ur,
+                    type: "PUT",
+                    success: function (response) {
+                        if (response.status == "Success") {
+                            alert("Success -" + response.message);
+                            window.location.href = "/BookView/Index";
+                        }
+                        else {
+                            alert("Error -" + response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        console.error("Error adding book:", error);
+                        alert("Error editing book: " + error); // Display error alert
+                    }
+
+                });
+
+            }
+
+        });
+        function checkvalid() {
+            var flag = false;
+            var id = $("#Bookid").val();
+            if (id == "") { $("#entererror").show(); }
+            else { flag = true; $("#entererror").hide(); }
+            return flag;
+        }
+    });
+</script>
+<script>
+    /*---------------------------Book ID generate -------------------------------*/
+
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#BookID");
+
+    function auto() {
+        let input = $inputTitle.val();
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+        let ur = url+"Issued_Books/GetAutoComplete";
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        if (item.bookStatus !== "Removed") {
+                            available.push(item.bookid);
+                        }
+                    });
+                }
+                display(); // Display results after fetching them
+                getTilte();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+            }
+        });
+    }
+
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+            $("#BookTitle").html("No Book With this id");
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+        getTilte();
+    }
+
+    $inputTitle.on('input', auto);
+
+    /*---------------------------Book Title generate -------------------------------*/
+    function getTilte() {
+        var id = $("#BookID").val();
+        var u = url+"Book_Data/GetById/" + id;
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: u,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        $("#BookTitle").html(item.bookTitle);
+                       
+                        console.log(item.bookTitle);
+                    });
+                } else {
+                    console.log("No Book");
+                    $("#BookTitle").html("No Book With this id");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error adding book:", error);
+                alert("Book not Found" + error);
+            }
+        });
+    }
+
+</script>

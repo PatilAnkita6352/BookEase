@@ -1,0 +1,234 @@
+﻿@{
+    ViewData["Title"] = "All Users";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>
+                    All Users
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">All Users</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!------------------------- Search box ---------------------------->
+
+<div class="row" style="width:50%; margin-left:23%; margin-bottom:2%;">
+    <div class="col-sm-1">
+        <p>Search</p>
+    </div>
+    <div class="col-sm-6">
+        <input type="text" class="form-control" id="input-Title" onkeyup="auto();" placeholder="Enter User ID or Name.." autocomplete="off">
+        <div class="autocompBox" style="width:95%;"></div>
+    </div>
+    <div class="col-sm-5">
+            <button type="submit" id="search-btn" class="btn btn-info"><i class="fas fa-search"></i> Search</button>
+            <button type="submit" id="back-btn" class="btn btn-default"> <i class="fas fa-step-backward"></i> Back</button>
+    </div>   
+</div>
+
+<!------------------------- All Users ---------------------------->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <small id="data-error" style="color:red;" class="card-title">No Users Found</small>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example" class="table table-bordered table-striped" style="overflow-x:scroll;">
+                            <thead style="background-color:  #3f6791 ;">
+                                <tr>
+                                    <th>User Name</th>
+                                    <th>Email Id</th>
+                                    <th>User Location</th>
+                                    <th>History</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablebody">
+                                <tr>
+                                    <td colspan="6">No History</td>
+
+                                </tr>
+                            </tbody>
+
+                        </table>
+
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+    </div>
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#input-Title");
+    function auto() {
+
+        var input = $("#input-Title").val();
+
+        var ur = url+"User_Data/Get";
+
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        var user = item.userId + "- " + item.userName;
+                        available.push(user);
+                    });
+                }
+                display(); // Display results after fetching them
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+    }
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+    }
+
+    $inputTitle.on('input', auto);
+</script>
+<script>
+    $(document).ready(function(){
+        $("#data-error").hide();
+         var res = "";
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+
+        /*----------------------- All Users ---------------------------------------*/
+       
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: url+"User_Data/Get",
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status = "Success") {
+                    $.each(response.data, function (index, item) {
+                        res += "<tr>" +
+                            "<td>" + item.userName + "</td>" +
+                            "<td>" + item.userEmail + "</td>" +
+                            "<td>" + item.userLoc + "</td>" +
+                            "<td><button class='history-btn btn btn-info info-btn' data-userId='" + item.userId + "' data-userName='" + item.userName + "'>History</button></td></tr>";
+
+                    });
+                    if(res!="")$("#tablebody").html(res);
+                } else {
+                    $("#data-error").show();
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+        /*----------------------- History Users ---------------------------------------*/
+        $(document).on("click", ".history-btn", function () {
+            var userId = $(this).attr("data-userId");
+            var username = $(this).attr("data-userName");
+            sessionStorage.setItem("userId", userId);
+            sessionStorage.setItem("username", username);
+            console.log("User ID:", userId);
+            window.location.href = "/UserView_Data/UserHistory";
+        });
+        /*----------------------- Search Users ---------------------------------------*/
+        $("#search-btn").on("click", function(){
+            var u_id = $("#input-Title").val().trim();
+            var user = u_id.split("-")[0];
+            var se = "";
+            if(user == ""){
+                user="none";
+            }
+            var ur = url+"User_Data/GetUserdata/" + user;
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: ur,
+                type: "POST",
+                success: function (response) {
+                    if (response.status = "Success") {
+                        $.each(response.data, function (index, item) {
+                            se += "<tr>" +
+                                "<td>" + item.userName + "</td>" +
+                                "<td>" + item.userEmail + "</td>" +
+                                "<td>" + item.userLoc + "</td>" +
+                                "<td><button class='history-btn btn btn-info info-btn' data-userId='" + item.userId + "' data-userName='" + item.userName + "'>History</button></td></tr>";
+                        });
+
+                        if (se != "") { $("#data-error").hide(); $("#tablebody").html(se); }
+                        else { $("#data-error").show(); $("#tablebody").html(res); }
+                    } else {
+                        $("#data-error").show();
+                        console.log(response.message);
+                    }
+
+                },
+                error: function (xhr, textStatus, errorThrown) {
+
+                    console.log('Error:', errorThrown);
+                }
+
+            });
+        });
+
+    });
+    
+    
+</script>
