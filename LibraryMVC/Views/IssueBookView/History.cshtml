@@ -1,0 +1,240 @@
+﻿@{
+    ViewData["Title"] = "Book History";
+}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>History</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">Book info</a></li>
+                    <li class="breadcrumb-item active">History</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<!------------------------- Search box ---------------------------->
+
+<div class="row" style="width:50%; margin-left:23%; margin-bottom:2%;">
+    <div class="col-sm-1">
+        <p>Search</p>
+    </div>
+    <div class="col-sm-6">
+        <input type="text" class="form-control" id="input-Title" onkeyup="auto();" placeholder="Enter User ID or Name.." autocomplete="off">
+        <div class="autocompBox" style="width:95%;"></div>
+    </div>
+    <div class="col-sm-5">
+        <button type="submit" id="search-btn" class="btn btn-info"><i class="fas fa-search"></i> Search</button>
+        <button type="submit" id="back-btn" class="btn btn-default"> <i class="fas fa-step-backward"></i> Back</button>
+    </div>
+</div>
+
+<!------------/.Search box-------------------->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <span id="data-error" style="color:red;" class="card-title">No History Found</span>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <table id="example" class="table table-bordered table-striped">
+                            <thead style="background-color:  #3f6791 ;">
+                                <tr>
+                                    <th>Book ID</th>
+                                    <th>User ID</th>
+                                    <th>User Name</th>
+                                    <th>Issue Date</th>
+                                    <th>Return Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablebody">
+                                <tr>
+                                    <td colspan="6">No History</td>
+                                    
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+
+                    <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</section>
+
+<!-- /.content -->
+ 
+    <!-- /.content -->
+
+<!-----------------------------  auto Complete for search ---------------->
+<script>
+    var url = "https://oibc12:8080/api/";
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#input-Title");
+    function auto() {
+
+        var input = $("#input-Title").val();
+
+        var ur = url+"User_Data/Get";
+
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        var user = item.userId + "- " + item.userName;
+                        available.push(user);
+                    });
+                }
+                display(); // Display results after fetching them
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+    }
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+    }
+
+    $inputTitle.on('input', auto);
+</script>
+<!----------------------------- All Book history --------------------------->
+<script>
+    $(document).ready(function () {
+        $("#data-error").hide();
+        var book = sessionStorage.getItem("bookid");
+        var ur1 = url+"Issued_Books/GetHistory?id=" + book;
+        var res = "";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur1,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                            res += "<tr>" +
+                                "<td>" + item.bookStockId + "</td>" +
+                                "<td>" + item.userId + "</td>" +
+                                "<td>" + item.userName + "</td>" +
+                                "<td>" + item.issueDate + "</td>" +
+                                "<td>" + item.returnDate + "</td>" +
+                                "<td>" + item.bookIStatus + "</td></tr>";
+                        
+                    });
+                    if (res != "") { 
+                        $("#tablebody").html(res);
+                        $("#data-error").hide();
+                    }
+                    else{
+                        $("#data-error").show();
+                    }
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+
+        /*----------------------------- Search---------------->*/
+        $("#search-btn").on("click", function(){
+            var book = sessionStorage.getItem("bookid");
+        var user_info = $("#input-Title").val();
+        var user_id = user_info.split("-")[0];
+        var user_name = user_info.split("-")[1].trim();
+        var pt = "";
+        var ur1 = url+"Issued_Books/GetHistory?id="+ book;
+           
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur1,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        if (item.userId == user_id) {
+                            pt += "<tr>" +
+                                "<td>" + item.bookStockId + "</td>" +
+                                "<td>" + item.userId + "</td>" +
+                                "<td>" + item.userName + "</td>" +
+                                "<td>" + item.issueDate + "</td>" +
+                                "<td>" + item.returnDate + "</td>" +
+                                "<td>" + item.bookIStatus + "</td></tr>";
+                        }  
+                    });
+                   
+                    if (pt != "") { $("#tablebody").html(pt); $("#data-error").hide(); }
+                    else { $("#data-error").show(); $("#tablebody").html(res);}
+                }
+
+            },
+            error: function (xhr, textStatus, errorThrown) {
+
+                console.log('Error:', errorThrown);
+            }
+
+        });
+        });
+       
+    });
+    
+   
+</script>

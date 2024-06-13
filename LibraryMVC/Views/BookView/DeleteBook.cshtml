@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Delete Book";
+}
+<div class="Book-edit-Title">
+    <h2>Delete Book</h2>
+    <hr>
+</div>
+<br>
+<div class="Book-edit container">
+    <form>
+        <small>Note: The Book with given id will be Deleted and can not be recovered</small>
+        <div class="row">
+            <h4 class="col-md-3"> Book Stock ID.: </h4>
+            <input class="col-md-9" id="Bid" type="text" autocomplete="off" required>
+        </div>
+        <div class="row">
+            <h4 class="col-md-3"> Book Name : </h4>
+            <input class="col-md-9" type="text" autocomplete="off"  required>
+        </div>
+
+        <input type="submit" id="delete" value="Delete">
+    </form>
+</div>
+<script>
+  var url = "https://oibc12:8080/api/";
+  $(document).ready(function () {
+        $("#delete").on("click", function (e) {
+            e.preventDefault();
+           
+            var id = $("#Bid").val();
+            alert(id);
+            var ur = url+"Book_Data/DeleteBook?id=" + id;
+
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: ur,
+                type: "DELETE",
+                success: function (response) {
+                    console.log("Book Deactivated");
+                    alert("Book Deleted successfully!"); // Display alert
+                },
+                error: function (xhr, status, error) {
+                    // Handle error response
+                    console.error("Error Deleted book:", error);
+                    alert("Error Deleted book: " + error); // Display error alert
+                }
+
+            });
+        });
+    });
+</script>

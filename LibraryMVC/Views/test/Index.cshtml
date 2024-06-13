@@ -1,0 +1,137 @@
+﻿@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jQuery UI Autocomplete - Default functionality</title>
+    <link rel="stylesheet" href="/css/StyleSheet.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LibraryMVC.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        .ui-autocomplete{
+        background-color:antiquewhite;
+        font-size:12px !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+   
+    <link rel="stylesheet" href="https://jqueryui.com/autocomplete/code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+   @*  <link rel="stylesheet" href="https://jqueryui.com/autocomplete/resources/demos/style.css"> *@
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    @* <script src="~/lib/jquery/dist/jquery.js"></script> *@
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+   
+</head>
+<body>
+    <div class="Book-edit-Title">
+        <h2>Issue Book</h2>
+        <hr>
+    </div>
+    <br>
+    <div class="Book-edit container">
+        <form autocomplete="off">
+            <div class="row">
+                <h4 class="col-md-3"> Book Name : </h4>
+                <input class="col-md-9" id="Bookname" type="text" disabled>
+            </div>
+            <div class="row">
+                <small id="stockerror">* Select the book to issue</small>
+                <h4 class="col-md-3"> Book Id : </h4>
+                <select id="BookStock" class="col-md-9">
+                    <option value="select">Select Bookid</option>
+                </select>
+            </div>
+            <div class="row">
+                <small id="Usererror">* User Id is required</small>
+                <h4 class="col-md-3"> User ID : </h4>
+                <!--<input class="col-md-9" id="UserId" type="text" required onkeyup="GetUsers();">-->
+                <input class="col-md-9" id="UserId" type="text" required>
+            </div>
+            <input type="button" value="Populate Data" id="populate">
+            <div class="row">
+                <div class="col-md-6">
+                    <small id="iserror">Issue Date can not be in Future</small>
+                    <div class="row">
+                        <h4 class="col-md-6"> Issue Date : </h4>
+                        <input class="col-md-6" id="Issuedate" type="Date" value="@ViewBag.Today">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <small id="reerror">Return Date can not be in Past or after max 2 months of issue</small>
+                    <div class="row">
+                        <h4 class="col-md-6"> Return Date : </h4>
+                        <input class="col-md-6" id="Returndate" type="Date" value="@ViewBag.NextMonth">
+                    </div>
+                </div>
+
+            </div>
+
+            <input type="submit" id="issue" value="Issue">
+            <h6 id="back-btn"><a href="#">Back</a></h6>
+        </form>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(function () {
+            var availableTags = [
+                "ActionScript",
+                "AppleScript",
+                "Asp",
+                "BASIC",
+                "C",
+                "C++",
+                "Clojure",
+                "COBOL",
+                "ColdFusion",
+                "Erlang",
+                "Fortran",
+                "Groovy",
+                "Haskell",
+                "Java",
+                "JavaScript",
+                "Lisp",
+                "Perl",
+                "PHP",
+                "Python",
+                "Ruby",
+                "Scala",
+                "Scheme"
+            ];
+            $("#UserId").autocomplete({
+                source: availableTags,
+                open: function (event, ui) {
+                    $(this).autocomplete("widget").css({
+                        "max-width": $('#UserId').width() + 48,
+                    });
+                    $(this).autocomplete("widget").scrollTop(0);
+                }
+            }).data('ui-autocomplete')._renderItem = function (ul, item) {
+                var inner_html = FormatAutocompleteList(item);
+                return $('<li class="" style="padding:5px;border-bottom:1px solid #82949a;"></li>')
+                    .data('item.autocomplete', item)
+                    .append(inner_html)
+                    .appendTo(ul);
+            };;
+
+        });
+        function FormatAutocompleteList(item) {
+            var inner_html = "<div class='col-md-12' style='cursor:pointer;font-size:14px;'>";
+            inner_html += "<label style='padding-top:0; font-size:15px;'>" + item.value + "</label>";
+            inner_html += "</div>";
+            return inner_html;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+﻿@{
+    ViewData["Title"] = "Add Book";
+}
+<style>
+    small {
+        color: red;
+        font-size: 13px;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Return Book</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">All issued Nook</a></li>
+                    <li class="breadcrumb-item active">Return Book</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid" style="margin:auto; width:1000px;">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- /.card -->
+                <!-- Horizontal Form -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Return Book</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="BookTitle" class="col-sm-2 col-form-label">Book Title : </label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="book"  disabled>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="BookID" class="col-sm-2 col-form-label">User : </label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="User" disabled>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <label class="col-md-4"> Issue Date : </label>
+                                        <input class="col-md-8 form-control" id="IssueDate" type="Date" disabled>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <label class="col-md-4"> Return Date : </label>
+                                        <input class="col-md-8 form-control" id="Returndate" value="@ViewBag.Today" type="Date" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" id="return-btn" class="btn btn-info">Return</button>
+                            <button type="submit" id="back-btn" class="btn btn-default float-right">Back</button>
+                        </div>
+                        <!-- /.card-footer -->
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        var bookId = sessionStorage.getItem("bookId");
+        var userId = sessionStorage.getItem("userId");
+        var book = sessionStorage.getItem("book");
+        var user = sessionStorage.getItem("user");
+        var issueDate = sessionStorage.getItem("issueDate");
+
+        console.log(book + user);
+
+        $("#book").val(book);
+        $("#User").val(user);
+        $("#IssueDate").val(issueDate);
+
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*----------------------- return Btn ---------------------------------------*/
+
+        $("#return-btn").on("click", function (e) {
+            e.preventDefault();
+
+            var ur = url+"Issued_Books/ReturnBook/" + bookId + "/" + userId;
+
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: ur,
+                type: "PUT",
+                success: function (response) {
+                    if (response.status = "Success") {
+                        alert("Success -" + response.message);
+                        window.location.href = "/BookView/Index";
+                    }
+                    else {
+                        alert("Success -" + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert("Error issue book: " + error);
+                }
+            });
+
+        });
+    });
+</script>

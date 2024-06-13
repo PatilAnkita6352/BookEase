@@ -1,0 +1,244 @@
+﻿@{
+    ViewData["Title"] = "Add Book Stock";
+}
+<style>
+    small {
+        color: red;
+        font-size: 13px;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add Book Stock</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Add New Stock</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid" style="margin:auto; width:1000px;">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- /.card -->
+                <!-- Horizontal Form -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New Stock</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="BookTitle" class="col-sm-2 col-form-label">Book Title</label>
+                                <div class="col-sm-10">
+                                    <h5 id="BookTitle" disabled>Book Title</h5>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="BookID" class="col-sm-2 col-form-label">Book ID</label>
+                                <div class="col-sm-10">
+                                    <small id="iderror">*Book ISN no. is required</small>
+                                    <input type="text" class="form-control" id="BookID" onkeyup="auto();" autocomplete="off">
+                                    <div class="autocompBox"></div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="BookStock" class="col-sm-2 col-form-label">No. of Books</label>
+                                <div class="col-sm-10">
+                                    <small id="stockerror">*Enter valid no</small>
+                                    <input type="text" class="form-control" id="BookStock" autocomplete="off">
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" id="Stock-btn" class="btn btn-info">Add Stock</button>
+                            <button type="submit" id="back-btn" class="btn btn-default float-right">Back</button>
+                        </div>
+                        <!-- /.card-footer -->
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        
+        $("#iderror").hide();
+        $("#stockerror").hide();
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*----------------------- Stock no ---------------------------------------*/
+        $("#BookStock").on("keypress", function (e) {
+            if ((e.which < 48 || e.which > 57)) {
+                    return false;
+            }
+        });
+        /*----------------------- Add Stock Btn ---------------------------------------*/
+        $("#Stock-btn").on("click", function (e) {
+            e.preventDefault();
+            var check_id = "";
+            var check_name = "";
+            var flag = 0;
+            var id = $("#BookID").val();
+            var cnt = $("#BookStock").val();
+
+
+            if (id == "" || cnt <= 0) {
+                if (id == "") $("#iderror").show();
+                if (cnt <= 0) $("#stockerror").show();
+            } else {
+                $("#iderror").hide();
+                $("#stockerror").hide();
+                calf(id, cnt);
+            }
+
+        });
+    });
+    function calf(id, cnt) {
+        var ur = url+"Book_Data/AddBookStock/" + id + "?cnt=" + cnt;
+
+        var book = {
+            BookStockId: id,
+            BookId: name
+        };
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "POST",
+            data: JSON.stringify(book),
+            success: function (response) {
+                if (response.status == "Success") {
+                    alert("Success -" + response.message);
+                    window.location.href = "/BookView/Index";
+                } else {
+                    alert("Error -" + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+
+                console.error("Error adding book:", error);
+                alert("Error adding book: " + error);
+            }
+
+        });
+
+
+    }
+</script>
+<script>
+    /*---------------------------Book ID generate -------------------------------*/
+
+        let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#BookID");
+
+    function auto() {
+        let input = $inputTitle.val();
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+        let ur = url+"Issued_Books/GetAutoComplete";
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        if (item.bookStatus !== "Removed") {
+                            available.push(item.bookid);
+                        }
+                    });
+                }
+                display(); // Display results after fetching them
+                getTilte();
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+            }
+        });
+    }
+
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+            $("#BookTitle").html("No Book With this id");
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+        getTilte();
+    }
+
+    $inputTitle.on('input', auto);
+
+    /*---------------------------Book Title generate -------------------------------*/
+    function getTilte() {
+        var id = $("#BookID").val();
+        var u = url+"Book_Data/GetById/" + id;
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: u,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        $("#BookTitle").html(item.bookTitle);
+                        console.log(item.bookTitle);
+                    });
+                    if ($("#BookID").val() == "") $("#BookTitle").html("");
+                } else {
+                    console.log("No Book");
+                    $("#BookTitle").html("No Book With this id");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error adding book:", error);
+                alert("Book not Found" + error);
+            }
+        });
+    }
+
+</script>

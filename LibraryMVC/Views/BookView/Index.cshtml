@@ -1,0 +1,323 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+<style>
+</style>
+
+<section>
+    <div class="row" style="width:80%; margin-left:20%; margin-top:5%;margin-bottom:3%;">
+        <select id="cat-search" class="form-control col-md-2" style="height:50px;">
+            <option value="None">Category</option>
+        </select>
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-sm-5 col-md-5">
+                    <input type="text" class="form-control" id="input-Title" onkeyup="auto();" placeholder="Enter Book Title to search.." autocomplete="off" style="height:50px;">
+                    <div class="autocompBox" style="width:300px;"></div>
+                </div>
+                <div class="col-sm-2 col-md-2">
+                    <button type="submit" id="search-btn" class="btn btn-lg btn-info"><i class="fas fa-search"></i> Search</button>
+                </div>
+            </div>
+            <div class="autocompBox"></div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <!-- Default box -->
+    <small id="search-error" style="color:red; font-size:15px;">No Book Available</small>
+    <div class="card card-solid">
+        <div class="card-body pb-0">
+            <div class="row" id="content-cards">
+                <div class="col-12 col-sm-6 col-md-3 d-flex align-items-stretch flex-column card-g" style="height:100%;">
+                    <div class="card d-flex flex-fill" style="background-color:#2C3136;border-bottom:2px solid red;">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <img src="~/Upload/634583.jpg" style="width:100%;" />
+                                </div>
+                                <div class="col-md-8">
+                                    <h2 class="lead">aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaa</h2>
+                                    <p class="text-muted text-sm" style="margin:0;padding:0;"><b>Author: </b> Web Designer </p>
+                                    <p class="text-muted text-sm"><b>Genere: </b>  Coffee Lover  </p>
+                                    <div class="" style="position:absolute; bottom:0; width:100%; ">
+                                        <a href="#" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-info-circle"></i> More Info
+                                        </a>
+                                        <a href="#" class="btn btn-sm " style="position:inherit; right:0; color:aliceblue;">
+                                            3 <i class="fas fa-star" style="color: lawngreen"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-3 d-flex align-items-stretch flex-column">
+                    <div class="card d-flex flex-fill" style="background-color:#2C3136;">
+                        <div class="card-body">
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <img src="~/Upload/634583.jpg" style="width:100%;" />
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row float-right">
+                                        <p class="float-right">Available</p>
+                                    </div>
+                                    <div class="row"></div>
+                                    <h2 class="lead">aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaa</h2>
+                                    <p class="text-muted text-sm" style="margin:0;padding:0;"><b>Author: </b> Web Designer </p>
+                                    <p class="text-muted text-sm"><b>Genere: </b>  Coffee Lover  </p>
+                                    <div class="row" style="position:absolute; bottom:0; width:100%; margin: 0;">
+                                        <div class="col-12 col-sm-6 p-0">
+                                            <a href="#" class="btn btn-sm btn-primary w-100 infobtn " style="min-height:min-content;" data-bookid="' + item.bookId + '">
+                                                <i class="fas fa-info-circle"></i> More Info
+                                            </a>
+                                        </div>
+                                        <div class="col-12 col-sm-6 p-0 text-sm-right">
+                                            <a href="#" class="btn btn-sm w-100 w-sm-auto" style="position:inherit; right:0; margin-bottom:0; color:aliceblue;">
+                                                ' +
+                                                item.bookRating + <i class="fas fa-star" style="color: #FFD43B;"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+       
+        var res = "";
+        var genre = '<option value="None">Category</option>';
+        $("#search-error").hide();
+        var ur = url + "Book_Data/GetAllBooks";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+
+                        var status = item.bookStatus;
+                        var Title = item.bookTitle;
+                        var statuscolor = item.bookStatus === "Not Available" ? '2px solid red' : '2px solid lawngreen';
+
+
+                        res += '<div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex align-items-stretch flex-column " style="min-width:400px; max-height:1700px;">' +
+                            '<div class="card d-flex flex-fill" style = "background-color:#2C3136;border-bottom:' + statuscolor + ';">' +
+                            '<div class="card-body" >' +
+                            '<div class="row" >' +
+                            '<div class="col-md-4" >' +
+                            '<img src="' + item.bookImg + '" style = "width:100%;" />' +
+                            '</div>' +
+                            '<div class="col-md-8"  style="min-height:40%;">' +
+                            '<h2 class="lead" >' + Title + '</h2>' +
+                            '<p class="text-muted text-sm" style = "margin:0;padding:0;"> <b>Author: </b>' + item.bookAuthor + '</p>' +
+                            '<p class="text-muted text-sm" > <b>Genere: </b> ' + item.bookGenre + ' </p>' +
+                            '<div class="row" style = "position:absolute; bottom:0; margin: 0; width:100%;" >'+
+                            '<div class="col-12 col-md-9 d-flex align-items-stretch flex-column" >' +
+                            '<a href="#" class="btn btn-sm btn-primary w-100 infobtn " data-bookid="' + item.bookId + '" >'+
+                            '<i class="fas fa-info-circle" > </i> More Info'+
+                            '</a>'+
+                            '</div>'+
+                            '<div class="col-12 col-md-3 p-0 text-sm-right d-flex align-items-stretch flex-column" >' +
+                            '<a href="#" class="btn btn-sm w-100 w-sm-auto" style = "position:inherit; right:0; margin-bottom:0; color:aliceblue;" >'+
+                            item.bookRating +' <i class="fas fa-star" style = "color: #FFD43B;" > </i>'+
+                            '</a>'+
+                            '</div>'+
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                    });
+                    if (res != "") { $("#content-cards").html(res); $("#search-error").hide(); }
+
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+                window.location.href = "/BookView/Index";
+            }
+        });
+        /*----------------------- Book info ---------------------------------------*/
+        $(document).on("click", ".infobtn", function () {
+            var id = $(this).attr("data-bookid");
+            sessionStorage.setItem("bookId", id);
+            window.location.href = "/BookView/BookInfo";
+        });
+        /*----------------------- Book Genere ---------------------------------------*/
+        ur = url+"Book_Data/GetGenere";
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                if (response.status == "Success") {
+                    $.each(response.data, function (index, item) {
+                        genre += '<option value="' + item + '">' + item + '</option>';
+                    })
+                    $("#cat-search").html(genre);
+                }
+            }
+        });
+        /*----------------------- All Books on search ---------------------------------------*/
+        $("#search-btn").on("click", function () {
+            var booktitle = $("#input-Title").val();
+            var bookcategory = $("#cat-search").val();
+            if (booktitle == "") {
+                booktitle = "None";
+            }
+
+            var r = "";
+            var u = url+"Book_Data/GetBookSearch?title=" + booktitle + "&genre=" + bookcategory;
+            $.ajax({
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                url: u,
+                type: "GET",
+                data: { status: "" },
+                success: function (response) {
+                    if (response.status == "Success") {
+                        var len = response.data.length;
+
+                        $.each(response.data, function (index, item) {
+                            console.log(item.bookTitle);
+                            if (item.bookStatus != "Removed") {
+
+                                var status = item.bookStatus;
+                                var Title = item.bookTitle;
+                                var statuscolor = item.bookStatus === "Not Available" ? '2px solid red' : '2px solid lawngreen';
+
+
+                                r += '<div class="col-12 col-sm-6 col-md-3 d-flex align-items-stretch flex-column" >' +
+                                    '<div class="card d-flex flex-fill" style = "background-color:#2C3136;border-bottom:' + statuscolor + ';">' +
+                                    '<div class="card-body" >' +
+                                    '<div class="row" >' +
+                                    '<div class="col-md-4" >' +
+                                    '<img src="' + item.bookImg + '" style = "width:100%;" />' +
+                                    '</div>' +
+                                    '<div class="col-md-8" >' +
+                                    '<h2 class="lead" >' + Title + '</h2>' +
+                                    '<p class="text-muted text-sm" style = "margin:0;padding:0;"> <b>Author: </b>' + item.bookAuthor + '</p>' +
+                                    '<p class="text-muted text-sm" > <b>Genere: </b> ' + item.bookGenre + ' </p>' +
+                                    '<div class="" style = "position:absolute; bottom:0; width:100%; " >' +
+                                    '<a href="#" class="btn btn-sm btn-primary infobtn" data-bookid="' + item.bookId + '">' +
+                                    '<i class="fas fa-info-circle" > </i> More Info</a>' +
+                                    '<a href = "#" class="btn btn-sm " style = "position:inherit; right:0; color:aliceblue;" >' +
+                                    item.bookRating + ' <i class="fas fa-star" style = "color: #FFD43B;"> </i>' +
+                                    ' </a>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</div>' +
+                                    '</div>';
+
+                            }
+                        });
+
+
+                        if (r != "") { $("#search-error").hide(); $("#content-cards").html(r); }
+                        else { $("#search-error").show(); $("#content-cards").html(res); }
+                    } else {
+                        $("#search-error").show(); $("#content-cards").html(res);
+                    }
+
+                },
+                error: function (xhr, textStatus, errorThrown) {
+
+                    console.log('Error:', errorThrown);
+                }
+
+            });
+        });
+
+
+    });
+    /*----------- ./ Book Genere ------*/
+
+
+
+    let available = [];
+    const $autocompBox = $(".autocompBox");
+    const $inputTitle = $("#input-Title");
+
+    function auto() {
+        let input = $inputTitle.val();
+        if (input === "") {
+            $autocompBox.empty();
+            return;
+        }
+        let ur = url+"Book_Data/GetBookAutocomplete/" + input;
+
+        $.ajax({
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            url: ur,
+            type: "GET",
+            data: { status: "" },
+            success: function (response) {
+                available = []; // Clear previous results
+                if (response.status === "Success") {
+                    response.data.forEach(item => {
+                        if (item.bookStatus !== "Removed") {
+                            available.push(item.bookTitle);
+                        }
+                    });
+                }
+                display(); // Display results after fetching them
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.log('Error:', errorThrown);
+            }
+        });
+    }
+
+    function display() {
+        let input = $inputTitle.val();
+        let result = available.filter(keyword =>
+            keyword.toLowerCase().includes(input.toLowerCase())
+        );
+
+        let content = result.map(list =>
+            `<li onclick='selectInput(this);'>${list}</li>`
+        ).join('');
+
+        $autocompBox.html(`<ul>${content}</ul>`);
+
+        if (!result.length) {
+            $autocompBox.empty();
+        }
+    }
+
+    function selectInput(list) {
+        $inputTitle.val($(list).text());
+        $autocompBox.empty();
+    }
+
+    $inputTitle.on('input', auto);
+
+</script>

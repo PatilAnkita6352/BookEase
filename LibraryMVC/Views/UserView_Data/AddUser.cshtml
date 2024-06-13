@@ -1,0 +1,171 @@
+﻿@{
+    ViewData["Title"] = "Add User";
+}
+<style>
+    small {
+        color: red;
+        font-size: 13px;
+    }
+</style>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1>Add User</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active">Add New User</li>
+                </ol>
+            </div>
+        </div>
+    </div><!-- /.container-fluid -->
+</section>
+<section class="content">
+    <div class="container-fluid" style="margin:auto; width:1000px;">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <!-- /.card -->
+                <!-- Horizontal Form -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title">Add New User</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form class="form-horizontal">
+                        <div class="card-body">
+                            <div class="form-group row">
+                                <label for="userID" class="col-sm-2 col-form-label">User ID</label>
+                                <div class="col-sm-10">
+                                    <small id="iderror">*Enter valid User Id</small>
+                                    <input type="text" class="form-control" id="userID" onkeyup="onlyNumberKey();" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="userName" class="col-sm-2 col-form-label">Name : </label>
+                                <div class="col-sm-10">
+                                    <small id="namerror">*User Name is required</small>
+                                    <input type="text" class="form-control" id="userName" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="userEmail" class="col-sm-2 col-form-label">Email : </label>
+                                <div class="col-sm-10">
+                                    <small id="emailerror">*Email is required</small>
+                                    <input type="text" class="form-control" id="userEmail" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="useraddress" class="col-sm-2 col-form-label">Address : </label>
+                                <div class="col-sm-10">
+                                    <small id="addresserror">*Address is required</small>
+                                    <textarea type="text" class="form-control" id="useraddress"></textarea>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" id="add-btn" class="btn btn-info">Add User</button>
+                            <button type="submit" id="back-btn" class="btn btn-default float-right">Back</button>
+                        </div>
+                        <!-- /.card-footer -->
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<script>
+    var url = "https://oibc12:8080/api/";
+    $(document).ready(function () {
+        $("#iderror").hide();
+        $("#namerror").hide();
+        $("#emailerror").hide();
+        $("#addresserror").hide();
+        /*----------------------- Back Btn ---------------------------------------*/
+
+        $("#back-btn").on("click", function (e) {
+            e.preventDefault();
+            window.history.go(-1);
+        });
+        /*----------------------- Add User ---------------------------------------*/
+
+        $("#add-btn").on("click", function (e) {
+            e.preventDefault();
+            var id = $("#userID").val();
+            var name = $("#userName").val();
+            var add = $("#useraddress").val();
+            var email = $("#userEmail").val();
+
+
+            if (id == "" || name == "" || email == "") {
+                $("#iderror").show();
+                $("#namerror").show();
+                $("#emailerror").show();
+            } else {
+                var user = {
+                    UserId: id,
+                    UserName: name,
+                    UserPass: email,
+                    UserAuth: "",
+                    UserEmail: email,
+                    UserLoc: add
+                };
+                if (onlyNumberKey()) {
+                    $.ajax({
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        url: url+"User_Data/Post",
+                        type: "POST",
+                        data: JSON.stringify(user),
+                        success: function (response) {
+                            if (response.status == "Success") {
+                                console.log("Success -" + response.message);
+                                alert("Success -" + response.message);
+                                window.location.href = "/BookView/Index";
+                            } else {
+                                console.log("Error -" + response.message);
+                                alert("Error -" + response.message);
+                            }
+
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error adding book:", error);
+                            alert("Error adding book: " + error);
+                        }
+
+                    });
+                } else {
+                    $("#iderror").show();
+                }
+
+            }
+
+        });
+
+    });
+    /*----------------------- User ID validity ---------------------------------------*/
+
+    function onlyNumberKey() {
+        var flag = false;
+        var valuerate = $("#userID").val();
+        if (valuerate == "") { $("#iderror").show(); flag = false; }
+        if (isNaN(valuerate)) {
+            $("#iderror").show();
+            return false;
+        }
+        else { $("#iderror").hide(); flag = true; }
+        console.log(valuerate);
+        if (valuerate.length > 10) { $("#iderror").show(); flag = false; }
+        else { $("#iderror").hide(); }
+        return flag;
+    }
+</script>
+
