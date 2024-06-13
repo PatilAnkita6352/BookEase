@@ -1,0 +1,5 @@
+This is the MVC project 
+After running this project you will be able to get the whole frontend of this project
+Admin password credentials are:
+Username: ab@gmail.com
+Password: a123
